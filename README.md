@@ -55,6 +55,7 @@ return array(
         'url'  => 'http://second-url-to-test'
     )
 );
+```
 
 In order to execute the benchmark test using a configuration file you need to
 use the -b option as showed in the following command:
