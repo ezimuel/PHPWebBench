@@ -1,0 +1,19 @@
+{
+    "name": "ezimuel/phpwebbench",
+    "description": "PHP Web Benchmark system",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "benchmark"
+    ],
+    "homepage": "http://www.zimuel.it/phpbench/",
+    "repositories": [ 
+        { "type": "composer", "url": "http://packages.zendframework.com" }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zend-console": "2.*"
+    },
+    "autoload": {
+        "psr-0": {"PHPWebBench": "src/"}
+    }
+}
