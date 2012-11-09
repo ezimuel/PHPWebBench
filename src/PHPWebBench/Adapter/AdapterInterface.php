@@ -12,5 +12,8 @@
 namespace PHPWebBench\Adapter;
 
 interface AdapterInterface {
+    /**
+     * @return PHPWebBench\Response 
+     */
     public function send($url, $num, $concurrency, $options = array());
 }

@@ -71,40 +71,37 @@ class Bench {
         }
         $result = array();
         foreach ($this->data as $bench) {
+            printf("Running test %s...", $bench['name']);
+            $start = microtime(true);
             $response = $this->http->send($bench['url'], $this->num_req, $this->concurrency);
-            $result[$bench['name']] = $this->analyzeResult($response['data'], $response['tot_time']);
+            $end = microtime(true);
+            printf("done\n");
+            $result[$bench['name']] = $this->analyzeResponse($response, $end - $start);
         }
         return $result;
     }
     
-    protected function analyzeResult($result, $time)
+    protected function analyzeResponse($result, $time)
     {
-        $total_time        = array();
-        $speed_download    = array();
         $output            = array();
-        $tot_size          = 0;
+        $time_request      = array();
         $output['success'] = 0;
-        $output['error']   = 0;
         
         foreach ($result as $data) {
-            $total_time[] = $data['total_time'];
-            $speed_download[] = $data['speed_download'];
-            $tot_size += $data['size_download'];
-            if ($data['http_code'] === 200) {
+            $time_request[] = $data['time_request'];
+            // Test for success, status code 2xx
+            if (($data['status']>=200) && ($data['status']<300)) {
                 $output['content_type']  = $data['content_type'];
-                $output['size_download'] = $data['size_download'];
-                $output['header_size']   = $data['header_size'];
+                $output['html_size']     = $data['html_size'];
+                $output['transfer_size'] = $data['transfer_size'];
                 $output['success']++;
-            } else {
-                $output['error']++;
-            }
+            } 
         }
-
-        $output['req_time']           = Stat::average($total_time);
-        $output['req_time_std']       = Stat::standard_deviation($total_time);
-        $output['speed_download']     = Stat::average($speed_download);
-        $output['speed_download_std'] = Stat::standard_deviation($speed_download);
-        $output['transfer_rate']      = $tot_size / $time;
+        $output['total_transfer']  = $output['transfer_size'] * $output['success'];
+        $output['time_request']    = Stat::average($time_request);
+        $output['time_request_sd'] = Stat::standard_deviation($time_request);
+        $output['transfer_rate']   = $output['total_transfer'] / $time;
+        $output['req_second']      = $output['success'] / $time;
         
         return $output;
     }

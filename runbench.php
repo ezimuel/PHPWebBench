@@ -27,10 +27,10 @@ $rules = array(
     'bench|b-s' => 'Benchmark file to execute',
     'num|n-i'   => 'Number of total requests (default is 3)',
     'conc|c-i'  => 'Number of multiple requests to perform at a time (default is 1)',
-    'url|u-s'   => 'Url to test (if no benchmakrk file specified)',
+    'url|u-s'   => 'URL to test (if benchmark file is not specified)',
 );
 
-printf ("PHPWebBench - version %s by Enrico Zimuel\n", VERSION);
+printf ("PHPWebBench %s by Enrico Zimuel.\n\n", VERSION);
 
 try {
     $opts = new Console\Getopt($rules);
@@ -80,23 +80,40 @@ $bench->setBenchmark($data);
 $result = $bench->execute();
 $end    = microtime(true);
 
-echo "\n";
-printf("Number of requests  : %d\n", $options['num']);
-printf("Concurrency level   : %d\n", $options['conc']);
-printf("Time for tests      : %.2f sec\n", $end - $start);  
-echo "\n";
+printf("\nRESULTS:\n");
+printf("--------\n");
+
+printf("Number of requests   : %d\n", $options['num']);
+printf("Concurrency level    : %d\n", $options['conc']);
+printf("Time for tests       : %.2f sec\n", $end - $start);  
+printf("\n");
 
 foreach ($result as $test => $value) {
-    printf("Test name           : %s\n", $test);
-    printf("Complete requests   : %d\n", $value['success']);
-    printf("Failed requests     : %d\n", $value['error']);
-    $size_download = isset($value['size_download']) ? $value['size_download'] : 0;
-    printf("HTML transferred    : %d bytes \n", $size_download);
-    printf("Requests per second : %.2f [#/sec]\n", (1 / ($value['req_time'] / $options['conc'])));
-    printf("Time per request    : %s (mean +/- %s)\n", 
-            Utility::normalizeSec($value['req_time']), Utility::normalizeSec($value['req_time_std']));
-    printf("Time per request    : %s (mean, across all concurrent requests)\n", 
-            Utility::normalizeSec($value['req_time'] / $options['conc']));
-    printf("Transfer rate       : %s/sec\n", Utility::normalizeByte($value['speed_download'] * $options['conc']));
-    echo "\n";
+    printf("Test name            : %s\n", $test);
+    printf("Success response 2xx : %d\n", $value['success']);
+    $html_size = isset($value['html_size']) ? $value['html_size'] : 0;
+    $html_size = Utility::normalizeByte($html_size);
+    printf("Document size        : %s [%s] \n", $html_size['value'], $html_size['unit']);
+    $tot_transfer = Utility::normalizeByte($value['total_transfer']);
+    printf("Total transferred    : %s [%s] \n", $tot_transfer['value'], $tot_transfer['unit']);
+    printf("Requests per second  : %.2f [#/sec]\n", $value['req_second']);
+    $time_request    = Utility::normalizeSec($value['time_request'], 'msec');
+    $time_request_sd = Utility::normalizeSec($value['time_request_sd'], $time_request['unit']);
+    printf(
+        "Time per request     : %s ± %s [%s] (mean)\n", 
+        $time_request['value'], $time_request_sd['value'], $time_request['unit']
+    );
+    if ($options['conc'] > 1) {
+        $time_req_conc = Utility::normalizeSec($value['time_request'] / $options['conc']);
+        printf(
+            "Time per request     : %s [%s] (mean, across all concurrent requests)\n", 
+            $time_req_conc['value'], $time_req_conc['unit']
+        );
+    }    
+    $transfer_rate = Utility::normalizeByte($value['transfer_rate']);
+    printf(
+        "Transfer rate        : %s [%s/sec]\n",
+        $transfer_rate['value'], $transfer_rate['unit']
+    );
+    printf("\n");
 }

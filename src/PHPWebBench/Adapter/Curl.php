@@ -11,8 +11,12 @@
  */
 namespace PHPWebBench\Adapter;
 
+use PHPWebBench\Response;
+
 class Curl extends AbstractAdapter
     implements AdapterInterface {
+    
+    const MAX_REDIRECT = 3;
     
     public function __construct($options = array())
     {
@@ -23,6 +27,15 @@ class Curl extends AbstractAdapter
         }
     }
     
+    /**
+     * Send the HTTP request
+     * 
+     * @param  string $url
+     * @param  integer $num
+     * @param  integer $conc
+     * @param  array $options
+     * @return Response 
+     */
     public function send($url, $num, $conc, $options = array()) {
         if (!empty($options)) {
             $this->setOptions($options);
@@ -33,12 +46,10 @@ class Curl extends AbstractAdapter
             $curl[$j] = curl_init(); 
             $this->setCurlOption($curl[$j], $options);
             curl_setopt($curl[$j], CURLOPT_URL, $url);
-            curl_setopt($curl[$j], CURLOPT_RETURNTRANSFER, true);
         }
             
-        $i = 0;
-        $result = array();
-        $result['tot_time'] = 0;
+        $i         = 0;
+        $result    = array();
         
         while ($i < $num) {
             $multi = curl_multi_init();
@@ -48,16 +59,14 @@ class Curl extends AbstractAdapter
         
             // execute the handles
             $running = null;
-            $start = microtime(true);
+
             do {
                 curl_multi_exec($multi, $running);
             } while ($running > 0);
-            $end = microtime(true);
-            $result['tot_time'] += $end - $start;
-
+            
             // get content and remove handles
             foreach ($curl as $c) {
-                $result['data'][] = curl_getinfo($c);
+                $result[] = $this->mapResponse(curl_getinfo($c));
                 curl_multi_remove_handle($multi, $c);
             }
             curl_multi_close($multi);
@@ -93,13 +102,26 @@ class Curl extends AbstractAdapter
             case 'DELETE':
                 break;
         }
+        curl_setopt($curl, CURLOPT_HEADER, true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        curl_setopt($curl, CURLOPT_MAXREDIRS, self::MAX_REDIRECT);
         if (isset($this->options['header'])) {
-            curl_setopt($curl, CURLOPT_HEADER, true);
             curl_setopt($curl, CURLOPT_HTTPHEADER, $this->options['header']);
-        } else {
-            curl_setopt($curl, CURLOPT_HEADER, false);
-        }
+        } 
         return $curl;
     }
-    
+ 
+    protected function mapResponse(array $data)
+    {
+        return array(
+            'html_size'      => $data['size_download'],
+            'time_request'   => $data['total_time'],
+            'transfer_size'  => $data['size_download'] + $data['header_size'],
+            'url'            => $data['url'],
+            'status'         => $data['http_code'],
+            'content_type'   => $data['content_type']
+        );
+    }
 }

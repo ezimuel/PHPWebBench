@@ -16,26 +16,72 @@ class Utility {
      * Normalize the byte value in bytes, Kb, Mb or Gb
      * 
      * @param  integer $byte
-     * @return string 
+     * @return array 
      */
-    public static function normalizeByte($byte)
+    public static function normalizeByte($byte, $unit = null)
     {
-        if ($byte < 1024) {
-            return "$byte [bytes]";
-        } elseif ($byte < 1048576) { // 1 Mb
-            return sprintf("%.2f [Kb]", $byte / 1024);
-        } elseif ($byte < 1073741824) { // 1 Gb
-            return sprintf("%.2f [Mb]", $byte / 1048576);
-        } else {
-            return sprintf("%.2f [Gb]", $byte / 1073741824);
+        if ($unit === null) {
+            if ($byte < 1024) {
+                $unit = 'bytes';
+            } elseif ($byte < 1048576) { // 1 Mb
+                $unit = 'Kb';
+            } elseif ($byte < 1073741824) { // 1 Gb
+                $unit = 'Mb';
+            } else {
+                $unit = 'Gb';
+            }
         }
+        switch (ucfirst($unit)) {
+            case 'Byte':
+            case 'Bytes':
+                $value = $byte;
+                break;
+            case 'Kb':
+                $value = sprintf("%.2f", $byte / 1024);
+                break;
+            case 'Mb':
+                $value = sprintf("%.2f", $byte / 1048576);
+                break;
+            case 'Gb':
+                $value = sprintf("%.2f", $byte / 1073741824);
+                break;
+        }
+        return array(
+            'value' => $value,
+            'unit'  => $unit
+        );
     }
-    public static function normalizeSec($sec)
+    /**
+     * Normalize the second in milliseconds, second
+     * 
+     * @param  integer $sec
+     * @return type 
+     */
+    public static function normalizeSec($sec, $unit = null)
     {
-        if ($sec < 1) {
-            return sprintf("%.2f [msec]", $sec * 1000);
-        } else {
-            return "$sec [sec]";
+        if ($unit == null) {
+            if ($sec < 1) {
+                $value = sprintf("%.2f", $sec * 1000);
+                $unit  = 'msec';
+            } else {
+                $value = sprintf("%.2f", $sec);
+                $unit  = 'sec';
+            }
         }
+        switch (strtolower($unit)) {
+            case 'second':
+            case 'sec':
+            case 'seconds':
+                $value = sprintf("%.2f", $sec);
+                break;
+            case 'msec':
+            case 'ms':
+                $value = sprintf("%.2f", $sec * 1000);
+                break;
+        }
+        return array(
+            'value' => $value,
+            'unit'  => $unit
+        );
     }
 }
