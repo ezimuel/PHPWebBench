@@ -10,7 +10,7 @@ information about the response time, the bytes downloaded, the transfer rate, et
 *PHPWebBench 0.1a*
 
 This is the first alpha version of the software. This means that it is *ready enough* to start
-testing and vetting the library, but not feature complete and not production ready.
+testing but not feature complete and not production ready.
 
 As this software is **ALPHA**, **Use at your own risk**!
 
@@ -24,7 +24,7 @@ running the following commands:
     $ php composer.phar install
 
 Composer will install the dependencies of the project inside the vendor folder.
-After that you can start to use PHPWebBench from the command line using the *runbench.php*
+After that, you can start to use PHPWebBench from the command line using the *runbench.php*
 script.
 
 ### USAGE
@@ -75,6 +75,7 @@ requests and only one concurrent client.
 The output of the script is a collection of information regarding the performance
 results. Below is reported an example of execution:
 
+    $ php runbench.php -b example/test.php
     PHPWebBench 0.1a by Enrico Zimuel.
 
     Running test Google...done
@@ -85,38 +86,42 @@ results. Below is reported an example of execution:
     --------
     Number of requests   : 3
     Concurrency level    : 1
-    Time for tests       : 7.78 sec
+    Time for tests       : 5.59 sec
 
     Test name            : Google
-    Success response 2xx : 3
+    URL                  : http://www.google.com
+    Status code 200      : 3
     Document size        : 42.38 [Kb] 
-    Total transferred    : 129.38 [Kb] 
-    Requests per second  : 4.01 [#/sec]
-    Time per request     : 248.94 ± 53.66 [msec] (mean)
-    Transfer rate        : 173.13 [Kb/sec]
+    Total transferred    : 131.62 [Kb] 
+    Requests per second  : 4.10 [#/sec]
+    Time per request     : 243.57 ± 59.25 [msec] (mean)
+    Transfer rate        : 180.00 [Kb/sec]
 
     Test name            : Yahoo
-    Success response 2xx : 3
-    Document size        : 389.99 [Kb] 
+    URL                  : http://www.yahoo.com
+    Status code 200      : 3
+    Document size        : 387.78 [Kb] 
     Total transferred    : 1.14 [Mb] 
-    Requests per second  : 0.54 [#/sec]
-    Time per request     : 1859.29 ± 660.45 [msec] (mean)
-    Transfer rate        : 210.00 [Kb/sec]
+    Requests per second  : 0.85 [#/sec]
+    Time per request     : 1180.64 ± 162.32 [msec] (mean)
+    Transfer rate        : 328.82 [Kb/sec]
 
     Test name            : Bing
-    Success response 2xx : 3
-    Document size        : 31.47 [Kb] 
-    Total transferred    : 97.28 [Kb] 
-    Requests per second  : 2.06 [#/sec]
-    Time per request     : 485.84 ± 101.85 [msec] (mean)
-    Transfer rate        : 66.73 [Kb/sec]
+    URL                  : http://www.bing.com
+    Status code 200      : 3
+    Document size        : 31.15 [Kb] 
+    Total transferred    : 97.20 [Kb] 
+    Requests per second  : 2.28 [#/sec]
+    Time per request     : 439.26 ± 134.62 [msec] (mean)
+    Transfer rate        : 73.74 [Kb/sec]
+
 
 
 The information reported in the output are quite similar to the
 [Apache benchmark](http://httpd.apache.org/docs/2.2/programs/ab.html) output.
 
 The most important value for performance consideration is the *Time per request*
-that give you an idea of the average response time on each HTTP request.
+that give you an idea about the average response time of each HTTP request.
 
 ### REQUIREMENT
 
