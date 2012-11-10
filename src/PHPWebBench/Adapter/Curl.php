@@ -59,7 +59,6 @@ class Curl extends AbstractAdapter
         
             // execute the handles
             $running = null;
-
             do {
                 curl_multi_exec($multi, $running);
             } while ($running > 0);
@@ -78,7 +77,7 @@ class Curl extends AbstractAdapter
     
     protected function setCurlOption($curl, $options)
     {
-        $method = (isset($options['method'])) ? $this->options['method'] : 'GET';
+        $method = (isset($options['method'])) ? strtoupper($this->options['method']) : 'GET';
         if (isset($this->options['data'])) {
             if ($method == 'GET') {
                 $query = '';
@@ -92,9 +91,16 @@ class Curl extends AbstractAdapter
                 }
             }
         }
+        curl_setopt($curl, CURLOPT_HEADER, true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        curl_setopt($curl, CURLOPT_MAXREDIRS, self::MAX_REDIRECT);
         switch ($method) {
+            case 'GET':
+                break;
             case 'POST':
-                curl_setopt($curl, CURLOPT_POST, true );
+                curl_setopt($curl, CURLOPT_POST, true);
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $options['data']);
                 break;
             case 'PUT':
@@ -102,11 +108,6 @@ class Curl extends AbstractAdapter
             case 'DELETE':
                 break;
         }
-        curl_setopt($curl, CURLOPT_HEADER, true);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
-        curl_setopt($curl, CURLOPT_MAXREDIRS, self::MAX_REDIRECT);
         if (isset($this->options['header'])) {
             curl_setopt($curl, CURLOPT_HTTPHEADER, $this->options['header']);
         } 

@@ -63,20 +63,20 @@ if (isset($opts->b)) {
     }
 } else {
     $data = array(array(
-            'name' => 'Testing URL',
+            'name' => $opts->u,
             'url'  => $opts->u
     ));
 }
 
 $options = array();
-
-$options['num'] = isset($opts->n) ? (int) $opts->n : DEFAULT_NUM;
+$options['num']  = isset($opts->n) ? (int) $opts->n : DEFAULT_NUM;
 $options['conc'] = isset($opts->c) ? (int) $opts->c : DEFAULT_CONCURRENCY;
 
-$start = microtime(true);
 $bench = new Bench($options);
 $bench->setHttpAdapter('curl');
 $bench->setBenchmark($data);
+
+$start  = microtime(true);
 $result = $bench->execute();
 $end    = microtime(true);
 
@@ -90,7 +90,10 @@ printf("\n");
 
 foreach ($result as $test => $value) {
     printf("Test name            : %s\n", $test);
-    printf("Success response 2xx : %d\n", $value['success']);
+    printf("URL                  : %s\n", $value['url']);
+    foreach ($value['status'] as $status => $num) {
+        printf("Status code %s      : %d\n", $status, $num);
+    }    
     $html_size = isset($value['html_size']) ? $value['html_size'] : 0;
     $html_size = Utility::normalizeByte($html_size);
     printf("Document size        : %s [%s] \n", $html_size['value'], $html_size['unit']);

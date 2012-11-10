@@ -73,35 +73,45 @@ class Bench {
         foreach ($this->data as $bench) {
             printf("Running test %s...", $bench['name']);
             $start = microtime(true);
-            $response = $this->http->send($bench['url'], $this->num_req, $this->concurrency);
+            $response = $this->http->send($bench['url'], $this->num_req, $this->concurrency, $bench);
             $end = microtime(true);
             printf("done\n");
-            $result[$bench['name']] = $this->analyzeResponse($response, $end - $start);
+            $result[$bench['name']] = $this->analyzeResponse($response, $bench['url'], $end - $start);
         }
         return $result;
     }
     
-    protected function analyzeResponse($result, $time)
+    protected function analyzeResponse($result, $url, $time)
     {
-        $output            = array();
-        $time_request      = array();
-        $output['success'] = 0;
+        $output                  = array();
+        $time_request            = array();
+        $output['status']        = array();
+        $output['transfer_size'] = 0;
+        $success                 = 0;
         
         foreach ($result as $data) {
             $time_request[] = $data['time_request'];
             // Test for success, status code 2xx
             if (($data['status']>=200) && ($data['status']<300)) {
-                $output['content_type']  = $data['content_type'];
-                $output['html_size']     = $data['html_size'];
-                $output['transfer_size'] = $data['transfer_size'];
-                $output['success']++;
+                if (!isset($output['content_type'])) {
+                    $output['content_type']  = $data['content_type'];
+                    $output['html_size']     = $data['html_size'];
+                    $output['transfer_size'] = $data['transfer_size'];
+                }
+                $success++;
             } 
+            if (isset($output['status'][$data['status']])) {
+                $output['status'][$data['status']]++;
+            } else {
+                $output['status'][$data['status']] = 1;
+            }
         }
-        $output['total_transfer']  = $output['transfer_size'] * $output['success'];
+        $output['url']             = $url;
+        $output['total_transfer']  = $output['transfer_size'] * $success;
         $output['time_request']    = Stat::average($time_request);
         $output['time_request_sd'] = Stat::standard_deviation($time_request);
         $output['transfer_rate']   = $output['total_transfer'] / $time;
-        $output['req_second']      = $output['success'] / $time;
+        $output['req_second']      = $success / $time;
         
         return $output;
     }
