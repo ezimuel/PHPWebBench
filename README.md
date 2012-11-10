@@ -33,7 +33,7 @@ Print the list of all the options.
 
     $ php runbench.php -h
 
-Execute a test on a single URL (by default it execute 3 requests using 1 client).
+Execute a test on a single URL (by default it executes 3 requests using 1 client).
 
     $ php runbench.php -u http://url-to-test
 
@@ -67,8 +67,6 @@ use the -b option. For instance, to run the example/test.php file:
 
     $ php runbench.php -b example/test.php
 
-The previous command execute the test stored in the data/test.php file using 3
-requests and only one concurrent client.
 
 ### OUTPUT
 
