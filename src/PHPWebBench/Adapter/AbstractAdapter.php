@@ -17,6 +17,8 @@ abstract class AbstractAdapter
     
     protected $methods = array ('GET', 'POST', 'PUT', 'DELETE');
         
+    protected $httpVersion;
+    
     public function __construct($options = array()) 
     {
         if (!empty($options)) {
@@ -41,5 +43,10 @@ abstract class AbstractAdapter
             }
         }
         $this->options = $options;
+    }
+    
+    public function setHttpVersion($version)
+    {
+        $this->httpVersion = $version;
     }
 }

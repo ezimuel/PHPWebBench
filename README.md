@@ -1,4 +1,4 @@
-### PHPWebBench
+## PHPWebBench
 
 PHPWebBench is a PHP platform to execute performance tests of HTTP web applications.
 It performs HTTP requests using different methods (GET, POST, PUT, DELETE) and retrieve
@@ -15,7 +15,7 @@ testing but not feature complete and not production ready.
 As this software is **ALPHA**, **Use at your own risk**!
 
 
-## INSTALL
+### INSTALL
 
 In order to install the software you need to use [Composer](http://getcomposer.org/),
 running the following commands:
@@ -24,22 +24,22 @@ running the following commands:
     $ php composer.phar install
 
 Composer will install the dependencies of the project inside the vendor folder.
-After that, you can start to use PHPWebBench from the command line using the *runbench.php*
+After that, you can start to use PHPWebBench from the command line using the *runbench*
 script.
 
 ### USAGE
 
 Print the list of all the options.
 
-    $ php runbench.php -h
+    $ ./runbench -h
 
 Execute a test on a single URL (by default it executes 3 requests using 1 client).
 
-    $ php runbench.php -u http://url-to-test
+    $ ./runbench -u http://url-to-test
 
 Execute a test on a single URL using 100 requests and 10 concurrent clients.
 
-    $ php runbench.php -n 100 -c 10 -u http://url-to-test
+    $ ./runbench -n 100 -c 10 -u http://url-to-test
 
 PHPWebBench can be also used with a PHP configuration file. In the example folder you can
 find a configuration file test.php that contains the following
@@ -65,7 +65,7 @@ return array(
 In order to execute the benchmark test using a configuration file you need to
 use the -b option. For instance, to run the example/test.php file:
 
-    $ php runbench.php -b example/test.php
+    $ ./runbench -b example/test.php
 
 
 ### OUTPUT
@@ -73,7 +73,7 @@ use the -b option. For instance, to run the example/test.php file:
 The output of the script is a collection of information regarding the performance
 results. Below is reported an example of execution:
 
-    $ php runbench.php -b example/test.php
+    $ ./runbench -b example/test.php
     PHPWebBench 0.1a by Enrico Zimuel.
 
     Running test Google...done
@@ -120,6 +120,28 @@ The information reported in the output are quite similar to the
 
 The most important value for performance consideration is the *Time per request*
 that give you an idea about the average response time of each HTTP request.
+
+### GRAPH
+
+PHPWebBench can generate the graphs of the output result using [gnuplot](http://www.gnuplot.info/).
+In order to produce the graphs you need to use the -graph (-g) option, for instance:
+
+    $ ./runbench -b example/test.php -g test
+
+This command executes the benchmark test in *example/test.php* and generates the
+graphs in the *test* folder.
+
+The graphs are generated with a file containing the data to be plotted (a csv file .dat) and
+a gnuplot script file (.plt).
+
+The graphs are generated using the PNG format as default adapter. If you want you can specify
+a different file format using the --gformat option. For instance, if you want to generate 
+PostScript files you can use the following command:
+
+    $ ./runbench -b example/test.php -g test --gformat ps
+
+PHPWebBench supports the following images formats: png, ps, pdf, jpg, svg, gif.
+
 
 ### REQUIREMENT
 

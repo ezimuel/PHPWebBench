@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /* 
  * PHP Web Benchmark system
@@ -10,6 +11,12 @@
  * @license   BSD 3-Clause License http://opensource.org/licenses/BSD-3-Clause
  */
 
+// Check if running from the command line
+if (php_sapi_name()!=="cli") {
+    echo "PHPWebBench can be executed only from the command line";
+    exit();
+}
+
 // Setup autoloading
 include 'init_autoloader.php';
 
@@ -21,6 +28,10 @@ define('DEFAULT_CONCURRENCY', 1);
 use Zend\Console;
 use PHPWebBench\Bench;
 use PHPWebBench\Utility;
+use PHPWebBench\Graph;
+use PHPWebBench\Exception;
+
+$supported_format = implode(",",Graph::getSupportedFormat());
 
 $rules = array(
     'help|h'    => 'Get usage message',
@@ -28,6 +39,10 @@ $rules = array(
     'num|n-i'   => 'Number of total requests (default is 3)',
     'conc|c-i'  => 'Number of multiple requests to perform at a time (default is 1)',
     'url|u-s'   => 'URL to test (if benchmark file is not specified)',
+    'graph|g-s' => 'Name of the folder contains the graphs',
+    'gformat-s' => "Choose the file format of the graph ($supported_format)",
+    'force|f'   => 'Force the overwrite of the ouput data',
+    'http-s'    => 'Choose the HTTP version: 1.0 or 1.1 (default 1.1)'
 );
 
 printf ("PHPWebBench %s by Enrico Zimuel.\n\n", VERSION);
@@ -68,12 +83,32 @@ if (isset($opts->b)) {
     ));
 }
 
+if (isset($opts->g)) {
+    if (file_exists($opts->g) && (!isset($opts->f))) {
+        printf(
+            "The folder %s already exists. I cannot overwrite it, use the force option (-f) if you want to.\n",
+            $opts->g
+        );
+        exit(2);
+    }
+    @mkdir($opts->g);
+}
+
 $options = array();
 $options['num']  = isset($opts->n) ? (int) $opts->n : DEFAULT_NUM;
 $options['conc'] = isset($opts->c) ? (int) $opts->c : DEFAULT_CONCURRENCY;
 
 $bench = new Bench($options);
 $bench->setHttpAdapter('curl');
+if (isset($opts->http)) {
+    try {
+        $bench->setHttpVersion($opts->http);
+    } catch (Exception\InvalidArgumentException $e) {
+        printf("Error: %s\n", $e->getMessage());
+        exit(2);
+    }
+}
+
 $bench->setBenchmark($data);
 
 $start  = microtime(true);
@@ -83,10 +118,13 @@ $end    = microtime(true);
 printf("\nRESULTS:\n");
 printf("--------\n");
 
+printf("HTTP version         : %s\n", $bench->getHttpVersion());
 printf("Number of requests   : %d\n", $options['num']);
 printf("Concurrency level    : %d\n", $options['conc']);
 printf("Time for tests       : %.2f sec\n", $end - $start);  
 printf("\n");
+
+$dataGraph = array();
 
 foreach ($result as $test => $value) {
     printf("Test name            : %s\n", $test);
@@ -113,10 +151,45 @@ foreach ($result as $test => $value) {
             $time_req_conc['value'], $time_req_conc['unit']
         );
     }    
-    $transfer_rate = Utility::normalizeByte($value['transfer_rate']);
+    $transfer_rate = Utility::normalizeByte($value['transfer_rate'], 'Kb');
     printf(
         "Transfer rate        : %s [%s/sec]\n",
         $transfer_rate['value'], $transfer_rate['unit']
     );
     printf("\n");
+    $dataGraph[$test] = array (
+        'time_request'  => array($time_request['value'], $time_request_sd['value']),
+        'req_second'    => $value['req_second'],
+        'transfer_rate' => $transfer_rate['value']
+    );
+}
+
+// Draw graphs
+if (isset($opts->g)) {
+    printf("Generating the graphs...");
+    try {
+        $graph = new Graph($opts->g);
+        if (isset($opts->gformat)) {
+            $graph->setFormat($opts->gformat);
+        }
+    } catch (Exception\RuntimeException $e) {
+        printf("Error: %s\n", $e->getMessage());
+        exit(2);
+    }
+    $graph->setData($dataGraph);
+    
+    $graph->setTitle("Time per request ({$options['num']} connections, {$options['conc']} clients)");
+    $graph->setLabelY('msec');
+    $graph->draw('time_request');
+    
+    $graph->setTitle("Requests per second ({$options['num']} connections, {$options['conc']} clients)");
+    $graph->setLabelY('#/sec');
+    $graph->draw('req_second');
+    
+    $graph->setTitle("Transfer rate ({$options['num']} connections, {$options['conc']} clients)");
+    $graph->setLabelY('Kb/sec');
+    $graph->draw('transfer_rate');
+    
+    printf("done\n");
+    printf("Graphs stored in %s folder.\n", $opts->g);
 }

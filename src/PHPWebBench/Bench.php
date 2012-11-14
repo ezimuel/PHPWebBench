@@ -17,6 +17,10 @@ class Bench {
         
     protected $http;
     
+    protected $supportedHttpVersions = array ('1.0', '1.1');
+    
+    protected $httpVersion = '1.1'; // default
+    
     public function __construct($options = array()) 
     {
         if (empty($options)) {
@@ -39,6 +43,23 @@ class Bench {
         return $this;
     }
        
+    public function setHttpVersion($version)
+    {
+        if (!in_array($version, $this->supportedHttpVersions)) {
+            throw new Exception\InvalidArgumentException(
+                sprintf(
+                    "The HTTP version must be a value in %s", 
+                    implode(',', $this->supportedHttpVersions))
+            );
+        }
+        $this->httpVersion = $version;
+    }
+    
+    public function getHttpVersion()
+    {
+        return $this->httpVersion;
+    }
+    
     public function setBenchmark($data)
     {
         if (empty($data)) {
@@ -70,6 +91,7 @@ class Bench {
             throw new Exception\InvalidArgumentException("I cannot execute the benchmark without a HTTP adapter");
         }
         $result = array();
+        $this->http->setHttpVersion($this->httpVersion);
         foreach ($this->data as $bench) {
             printf("Running test %s...", $bench['name']);
             $start = microtime(true);

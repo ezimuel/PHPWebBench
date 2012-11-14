@@ -96,6 +96,7 @@ class Curl extends AbstractAdapter
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         curl_setopt($curl, CURLOPT_MAXREDIRS, self::MAX_REDIRECT);
+        curl_setopt($curl, CURLOPT_HTTP_VERSION, $this->httpVersion);
         switch ($method) {
             case 'GET':
                 break;
