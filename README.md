@@ -123,8 +123,8 @@ that give you an idea about the average response time of each HTTP request.
 
 ### GRAPH
 
-PHPWebBench can generate the graphs of the output result using [gnuplot](http://www.gnuplot.info/).
-In order to produce the graphs you need to use the -graph (-g) option, for instance:
+PHPWebBench can generates the graphs of the results using [gnuplot](http://www.gnuplot.info/).
+In order to produce the graphs you need to use the --graph (-g) option, for instance:
 
     $ ./runbench -b example/test.php -g test
 
@@ -134,7 +134,7 @@ graphs in the *test* folder.
 The graphs are generated with a file containing the data to be plotted (a csv file .dat) and
 a gnuplot script file (.plt).
 
-The graphs are generated using the PNG format as default adapter. If you want you can specify
+The images are generated using the PNG format as default adapter. If you want you can specify
 a different file format using the --gformat option. For instance, if you want to generate 
 PostScript files you can use the following command:
 
