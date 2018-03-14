@@ -7,14 +7,15 @@ information about the response time, the bytes downloaded, the transfer rate, et
 
 ### INSTALL
 
-In order to install the software you need to use [Composer](http://getcomposer.org/),
-running the following commands:
+In order to install the software you need to use [Composer](http://getcomposer.org/).
+You need to execute the following composer command:
 
-    $ curl -s https://getcomposer.org/installer | php
-    $ php composer.phar install
+```bash
+composer install
+```
 
 Composer will install the dependencies of the project inside the vendor folder.
-After that, you can start to use PHPWebBench from the command line using the
+After that, you can start to use `PHPWebBench` from the command line using the
 `bin/runbench` script.
 
 ### USAGE
