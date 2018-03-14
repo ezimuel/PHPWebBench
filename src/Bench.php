@@ -11,8 +11,6 @@
  */
 namespace PHPWebBench;
 
-use PHPWebBench\Stat;
-
 class Bench {
 
     protected $http;

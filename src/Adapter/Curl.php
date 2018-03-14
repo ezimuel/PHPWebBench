@@ -11,7 +11,6 @@
  */
 namespace PHPWebBench\Adapter;
 
-use PHPWebBench\Response;
 use PHPWebBench\Exception;
 
 class Curl extends AbstractAdapter
@@ -35,14 +34,14 @@ class Curl extends AbstractAdapter
      * @param  integer $num
      * @param  integer $conc
      * @param  array $options
-     * @return Response
+     * @return array
      */
-    public function send($url, $num, $conc, $options = array()) {
+    public function send($url, $num, $conc, $options = []) {
         if (!empty($options)) {
             $this->setOptions($options);
         }
 
-        $curl = array();
+        $curl = [];
         for ($j=0; $j < $conc; $j++) {
             $curl[$j] = curl_init();
             $this->setCurlOption($curl[$j], $options);
@@ -50,7 +49,7 @@ class Curl extends AbstractAdapter
         }
 
         $i         = 0;
-        $result    = array();
+        $result    = [];
         while ($i < $num) {
             $multi = curl_multi_init();
             foreach ($curl as $c) {

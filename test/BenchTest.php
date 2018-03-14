@@ -9,16 +9,19 @@
  * @copyright Copyright (C) Enrico Zimuel
  * @license   BSD 3-Clause License http://opensource.org/licenses/BSD-3-Clause
  */
-use PHPWebBench\Bench;
+namespace PHPWebBenchTest;
 
-class BenchTest extends PHPUnit_Framework_TestCase
+use PHPWebBench\Bench;
+use PHPUnit\Framework\TestCase;
+
+class BenchTest extends TestCase
 {
     public function setUp()
     {
-        $this->bench = new Bench(array(
+        $this->bench = new Bench([
             'num'  => 10,
             'conc' => 2
-        ));
+        ]);
     }
 
     /**
