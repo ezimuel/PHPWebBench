@@ -1,15 +1,26 @@
 #!/usr/bin/env php
 <?php
-/* 
+/*
  * PHP Web Benchmark system
- * 
+ *
  * The command line script
- * 
+ *
  * @author    Enrico Zimuel (enrico@zimuel.it)
  * @link      http://github.com/ezimuel/PHPWebBench for the canonical source repository
  * @copyright Copyright (C) Enrico Zimuel
  * @license   BSD 3-Clause License http://opensource.org/licenses/BSD-3-Clause
  */
+ chdir(dirname(__DIR__));
+
+ // Composer autoloading
+ if (!file_exists('vendor/autoload.php')) {
+     echo "Unable to load PHPWebBench. Run the following commands:\n";
+     echo "$ curl -s https://getcomposer.org/installer | php\n";
+     echo "$ php composer.phar install\n";
+     exit(2);
+ }
+
+require 'vendor/autoload.php';
 
 // Check if running from the command line
 if (php_sapi_name()!=="cli") {
@@ -17,11 +28,8 @@ if (php_sapi_name()!=="cli") {
     exit();
 }
 
-// Setup autoloading
-include 'init_autoloader.php';
-
 // Constants
-define('VERSION', '0.1a');
+define('VERSION', '0.1');
 define('DEFAULT_NUM', 3);
 define('DEFAULT_CONCURRENCY', 1);
 
@@ -121,7 +129,7 @@ printf("--------\n");
 printf("HTTP version         : %s\n", $bench->getHttpVersion());
 printf("Number of requests   : %d\n", $options['num']);
 printf("Concurrency level    : %d\n", $options['conc']);
-printf("Time for tests       : %.2f sec\n", $end - $start);  
+printf("Time for tests       : %.2f sec\n", $end - $start);
 printf("\n");
 
 $dataGraph = array();
@@ -131,7 +139,7 @@ foreach ($result as $test => $value) {
     printf("URL                  : %s\n", $value['url']);
     foreach ($value['status'] as $status => $num) {
         printf("Status code %s      : %d\n", $status, $num);
-    }    
+    }
     $html_size = isset($value['html_size']) ? $value['html_size'] : 0;
     $html_size = Utility::normalizeByte($html_size);
     printf("Document size        : %s [%s] \n", $html_size['value'], $html_size['unit']);
@@ -141,16 +149,16 @@ foreach ($result as $test => $value) {
     $time_request    = Utility::normalizeSec($value['time_request'], 'msec');
     $time_request_sd = Utility::normalizeSec($value['time_request_sd'], $time_request['unit']);
     printf(
-        "Time per request     : %s ± %s [%s] (mean)\n", 
+        "Time per request     : %s ± %s [%s] (mean)\n",
         $time_request['value'], $time_request_sd['value'], $time_request['unit']
     );
     if ($options['conc'] > 1) {
         $time_req_conc = Utility::normalizeSec($value['time_request'] / $options['conc']);
         printf(
-            "Time per request     : %s [%s] (mean, across all concurrent requests)\n", 
+            "Time per request     : %s [%s] (mean, across all concurrent requests)\n",
             $time_req_conc['value'], $time_req_conc['unit']
         );
-    }    
+    }
     $transfer_rate = Utility::normalizeByte($value['transfer_rate'], 'Kb');
     printf(
         "Transfer rate        : %s [%s/sec]\n",
@@ -177,19 +185,19 @@ if (isset($opts->g)) {
         exit(2);
     }
     $graph->setData($dataGraph);
-    
+
     $graph->setTitle("Time per request ({$options['num']} connections, {$options['conc']} clients)");
     $graph->setLabelY('msec');
     $graph->draw('time_request');
-    
+
     $graph->setTitle("Requests per second ({$options['num']} connections, {$options['conc']} clients)");
     $graph->setLabelY('#/sec');
     $graph->draw('req_second');
-    
+
     $graph->setTitle("Transfer rate ({$options['num']} connections, {$options['conc']} clients)");
     $graph->setLabelY('Kb/sec');
     $graph->draw('transfer_rate');
-    
+
     printf("done\n");
     printf("Graphs stored in %s folder.\n", $opts->g);
 }

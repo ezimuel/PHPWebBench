@@ -1,19 +1,20 @@
 {
     "name": "ezimuel/phpwebbench",
-    "description": "PHP Web Benchmark system",
+    "description": "PHP Web Bench is a tool for benchmarking web application",
     "license": "BSD-3-Clause",
     "keywords": [
-        "benchmark"
-    ],
-    "homepage": "http://www.zimuel.it/phpbench/",
-    "repositories": [ 
-        { "type": "composer", "url": "http://packages.zendframework.com" }
+        "benchmark",
+        "http",
+        "php"
     ],
     "require": {
-        "php": ">=5.3.3",
+        "php": "^5.6 || ^7.0",
         "zendframework/zend-console": "2.*"
     },
     "autoload": {
-        "psr-0": {"PHPWebBench": "src/"}
-    }
+        "psr-4": {
+            "PHPWebBench\\": "src/"
+        }
+    },
+    "bin" : [ "bin/runbench" ]
 }

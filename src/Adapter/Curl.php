@@ -1,9 +1,9 @@
 <?php
-/* 
+/*
  * PHP Web Benchmark system
- * 
+ *
  * The CURL HTTP adapter
- * 
+ *
  * @author    Enrico Zimuel (enrico@zimuel.it)
  * @link      http://github.com/ezimuel/PHPWebBench for the canonical source repository
  * @copyright Copyright (C) Enrico Zimuel
@@ -12,57 +12,57 @@
 namespace PHPWebBench\Adapter;
 
 use PHPWebBench\Response;
+use PHPWebBench\Exception;
 
 class Curl extends AbstractAdapter
     implements AdapterInterface {
-    
+
     const MAX_REDIRECT = 3;
-    
+
     public function __construct($options = array())
     {
         parent::__construct($options);
-        
+
         if (!function_exists( 'curl_init' )) {
             throw new Exception\InvalidArgumentException("I cannot use the CURL adapter, please install the CURL extension");
         }
     }
-    
+
     /**
      * Send the HTTP request
-     * 
+     *
      * @param  string $url
      * @param  integer $num
      * @param  integer $conc
      * @param  array $options
-     * @return Response 
+     * @return Response
      */
     public function send($url, $num, $conc, $options = array()) {
         if (!empty($options)) {
             $this->setOptions($options);
         }
-        
+
         $curl = array();
         for ($j=0; $j < $conc; $j++) {
-            $curl[$j] = curl_init(); 
+            $curl[$j] = curl_init();
             $this->setCurlOption($curl[$j], $options);
             curl_setopt($curl[$j], CURLOPT_URL, $url);
         }
-            
+
         $i         = 0;
         $result    = array();
-        
         while ($i < $num) {
             $multi = curl_multi_init();
             foreach ($curl as $c) {
                 curl_multi_add_handle($multi, $c);
             }
-        
+
             // execute the handles
             $running = null;
             do {
                 curl_multi_exec($multi, $running);
             } while ($running > 0);
-            
+
             // get content and remove handles
             foreach ($curl as $c) {
                 $result[] = $this->mapResponse(curl_getinfo($c));
@@ -71,10 +71,13 @@ class Curl extends AbstractAdapter
             curl_multi_close($multi);
             $i += $conc;
         }
-        
+        // close all curl init
+        foreach($curl as $c) {
+            curl_close($c);
+        }
         return $result;
     }
-    
+
     protected function setCurlOption($curl, $options)
     {
         $method = (isset($options['method'])) ? strtoupper($this->options['method']) : 'GET';
@@ -97,6 +100,8 @@ class Curl extends AbstractAdapter
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         curl_setopt($curl, CURLOPT_MAXREDIRS, self::MAX_REDIRECT);
         curl_setopt($curl, CURLOPT_HTTP_VERSION, $this->httpVersion);
+        curl_setopt($curl, CURLOPT_FRESH_CONNECT, true);
+
         switch ($method) {
             case 'GET':
                 break;
@@ -111,10 +116,10 @@ class Curl extends AbstractAdapter
         }
         if (isset($this->options['header'])) {
             curl_setopt($curl, CURLOPT_HTTPHEADER, $this->options['header']);
-        } 
+        }
         return $curl;
     }
- 
+
     protected function mapResponse(array $data)
     {
         return array(

@@ -1,9 +1,9 @@
 <?php
-/* 
+/*
  * PHP Web Benchmark system
- * 
+ *
  * Bench class
- * 
+ *
  * @author    Enrico Zimuel (enrico@zimuel.it)
  * @link      http://github.com/ezimuel/PHPWebBench for the canonical source repository
  * @copyright Copyright (C) Enrico Zimuel
@@ -14,14 +14,14 @@ namespace PHPWebBench;
 use PHPWebBench\Stat;
 
 class Bench {
-        
+
     protected $http;
-    
+
     protected $supportedHttpVersions = array ('1.0', '1.1');
-    
+
     protected $httpVersion = '1.1'; // default
-    
-    public function __construct($options = array()) 
+
+    public function __construct($options = array())
     {
         if (empty($options)) {
             throw new Exception\InvalidArgumentException("Options cannot be empty");
@@ -29,7 +29,7 @@ class Bench {
         $this->num_req = $options['num'];
         $this->concurrency = $options['conc'];
     }
-    
+
     public function setHttpAdapter($adapter)
     {
         if (!file_exists(__DIR__ . '/Adapter/'. ucfirst($adapter) . '.php')) {
@@ -42,24 +42,24 @@ class Bench {
         }
         return $this;
     }
-       
+
     public function setHttpVersion($version)
     {
         if (!in_array($version, $this->supportedHttpVersions)) {
             throw new Exception\InvalidArgumentException(
                 sprintf(
-                    "The HTTP version must be a value in %s", 
+                    "The HTTP version must be a value in %s",
                     implode(',', $this->supportedHttpVersions))
             );
         }
         $this->httpVersion = $version;
     }
-    
+
     public function getHttpVersion()
     {
         return $this->httpVersion;
     }
-    
+
     public function setBenchmark($data)
     {
         if (empty($data)) {
@@ -81,7 +81,7 @@ class Bench {
         $this->data = $data;
         return $this;
     }
-    
+
     public function execute()
     {
         if (empty($this->data)) {
@@ -102,7 +102,7 @@ class Bench {
         }
         return $result;
     }
-    
+
     protected function analyzeResponse($result, $url, $time)
     {
         $output                  = array();
@@ -110,7 +110,7 @@ class Bench {
         $output['status']        = array();
         $output['transfer_size'] = 0;
         $success                 = 0;
-        
+
         foreach ($result as $data) {
             $time_request[] = $data['time_request'];
             // Test for success, status code 2xx
@@ -121,7 +121,7 @@ class Bench {
                     $output['transfer_size'] = $data['transfer_size'];
                 }
                 $success++;
-            } 
+            }
             if (isset($output['status'][$data['status']])) {
                 $output['status'][$data['status']]++;
             } else {
@@ -134,7 +134,7 @@ class Bench {
         $output['time_request_sd'] = Stat::standard_deviation($time_request);
         $output['transfer_rate']   = $output['total_transfer'] / $time;
         $output['req_second']      = $success / $time;
-        
+
         return $output;
     }
 }
